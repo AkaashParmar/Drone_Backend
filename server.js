@@ -6,6 +6,7 @@ import path from 'path';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 dotenv.config();
 await connectDB();
@@ -33,6 +34,7 @@ app.get("/", (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/admin', adminRoutes);
 
 // error handler
 app.use((err, req, res, next) => {

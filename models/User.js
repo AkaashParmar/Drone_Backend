@@ -38,7 +38,9 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, default: '' },
   email: { type: String, required: true, unique: true, trim: true, lowercase: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['Buyer', 'Seller', 'Renter', 'Partner'], default: 'Buyer' },
+  // role: { type: String, enum: ['Buyer', 'Seller', 'Renter', 'Partner'], default: 'Buyer' },
+  role: { type: String, enum: ['Buyer', 'Seller', 'Renter', 'Partner', 'Admin'], default: 'Buyer' },
+
 
   // Agree terms / remember me
   agreeTerms: { type: Boolean, default: false },
