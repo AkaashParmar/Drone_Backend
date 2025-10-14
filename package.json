@@ -4,11 +4,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "create-admin": "node --experimental-modules scripts/createAdmin.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
+    
   },
   "keywords": [],
-  
   "author": "",
   "license": "ISC",
   "description": "",

@@ -4,7 +4,7 @@ import {
   updateRoleDetails, uploadDocs, getUsersByRole
 } from '../controllers/userController.js';
 import { protect } from '../middleware/authMiddleware.js';
-import { uploadMultiple } from '../middleware/uploadMiddleware.js';
+import uploadMultiple  from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
