@@ -22,7 +22,7 @@ const renterSchema = new mongoose.Schema({
   renterFleet: { type: Number, default: 0 },
   renterRate: { type: Number, default: 0 },
   renterDays: { type: [String], default: [] },
-  renterDeposit: { type: String, enum: ['Yes','No'], default: 'Yes' },
+  renterDeposit: { type: String, enum: ['Yes', 'No'], default: 'Yes' },
   renterPickup: { type: String, default: '' }
 });
 
@@ -43,6 +43,8 @@ const userSchema = new mongoose.Schema({
   // Agree terms / remember me
   agreeTerms: { type: Boolean, default: false },
   rememberMe: { type: Boolean, default: false },
+  otp: String,
+  otpExpires: Date,
 
   // Role-specific nested objects
   roleDetails: {
@@ -54,19 +56,19 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Hash password
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-userSchema.methods.matchPassword = async function(enteredPassword) {
+userSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
 // Remove password when converting to JSON
-userSchema.methods.toJSON = function() {
+userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
   return obj;
