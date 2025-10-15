@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import Drone from '../models/productModel.js';
 import path from 'path';
 
 // GET /api/user/profile
@@ -50,7 +51,6 @@ export const selectRole = async (req, res) => {
   }
 };
 
-// PUT /api/user/role-details
 // Accepts role-specific object in body (for Buyer, Seller, Renter, Partner)
 export const updateRoleDetails = async (req, res) => {
   try {
@@ -119,3 +119,67 @@ export const getUsersByRole = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// add to cart for product
+export const addToCart = async (req, res) => {
+  try {
+    const { userId, droneId, quantity } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const drone = await Drone.findById(droneId);
+    if (!drone) return res.status(404).json({ success: false, message: 'Drone not found' });
+
+    const existingItem = user.cart.find(item => item.product.toString() === droneId);
+
+    if (existingItem) {
+      existingItem.quantity += quantity || 1;
+    } else {
+      user.cart.push({ product: droneId, quantity: quantity || 1 });
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Item added to cart successfully',
+      cart: user.cart
+    });
+
+  } catch (err) {
+    console.error("Add to cart error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// remove from cart for product
+export const removeFromCart = async (req, res) => {
+  try {
+    const { userId, droneId } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const itemIndex = user.cart.findIndex(item => item.product.toString() === droneId);
+    if (itemIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Item not found in cart' });
+    }
+
+    // Remove item
+    user.cart.splice(itemIndex, 1);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Item removed from cart successfully',
+      cart: user.cart
+    });
+
+  } catch (err) {
+    console.error("Remove from cart error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+

@@ -33,6 +33,11 @@ const partnerSchema = new mongoose.Schema({
   partnerRegions: { type: [String], default: [] }
 });
 
+const cartItemSchema = new mongoose.Schema({
+  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Drone', required: true },
+  quantity: { type: Number, default: 1 }
+});
+
 const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true, trim: true },
   phone: { type: String, default: '' },
@@ -40,8 +45,8 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   // role: { type: String, enum: ['Buyer', 'Seller', 'Renter', 'Partner'], default: 'Buyer' },
   role: { type: String, enum: ['Buyer', 'Seller', 'Renter', 'Partner', 'Admin'], default: 'Buyer' },
-
-
+  cart: [cartItemSchema],
+  
   // Agree terms / remember me
   agreeTerms: { type: Boolean, default: false },
   rememberMe: { type: Boolean, default: false },
