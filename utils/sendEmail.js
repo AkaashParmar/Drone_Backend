@@ -10,7 +10,7 @@ const sendEmail = async (to, subject, html, replyTo = null) => {
   });
 
   await transporter.sendMail({
-    from: `"Drone Rental Website" <${process.env.EMAIL_USER}>`,
+    from: `"FLYGRID DRONE WEBSITE" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html,
