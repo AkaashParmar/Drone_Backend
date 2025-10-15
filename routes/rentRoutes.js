@@ -1,10 +1,9 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
-import { applyForRent, getAllRents } from "../controllers/rentController.js";
+import { createBooking, getBookings } from "../controllers/rentController.js";
 
 const router = express.Router();
 
-router.post("/", protect, applyForRent);
-router.get("/", protect, getAllRents);
+router.post("/book", createBooking);
+router.get("/", getBookings);
 
 export default router;
