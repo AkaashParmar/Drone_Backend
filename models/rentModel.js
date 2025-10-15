@@ -1,11 +1,42 @@
 import mongoose from "mongoose";
 
-const rentSchema = new mongoose.Schema({
-  renter: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  droneModel: { type: String, required: true },
-  rentDuration: { type: Number, required: true }, // in days
-  rentPrice: { type: Number, required: true },
-  status: { type: String, enum: ["pending", "approved", "completed"], default: "pending" },
-}, { timestamps: true });
+const droneBookingSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  phone: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  droneModel: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  pickupDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
+  message: {
+    type: String,
+    trim: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-export default mongoose.model("Rent", rentSchema);
+export default mongoose.model("DroneBooking", droneBookingSchema);
