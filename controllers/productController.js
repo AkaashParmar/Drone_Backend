@@ -1,6 +1,7 @@
 import Drone from "../models/productModel.js";
 import fs from "fs";
 import cloudinary from "../config/cloudinary-config.js";
+import Order from '../models/productOrderModel.js';
 
 // Create a new drone
 export const createDrone = async (req, res) => {
@@ -9,6 +10,11 @@ export const createDrone = async (req, res) => {
 
     if (typeof droneData === "string") {
       droneData = JSON.parse(droneData);
+    }
+
+    // Add createdBy field
+    if (req.user && req.user.id) {
+      droneData.createdBy = req.user.id;
     }
 
     // Handle image upload
@@ -99,3 +105,43 @@ export const deleteDrone = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+
+
+// product order (buyNow controller)
+export const buyNow = async (req, res) => {
+  try {
+    const { userId, droneId, quantity } = req.body;
+
+    const drone = await Drone.findById(droneId);
+    if (!drone)
+      return res.status(404).json({ success: false, message: 'Drone not found' });
+
+    // Check if there is already a pending order for this user
+    let existingOrder = await Order.findOne({ user: userId, status: 'Pending' });
+
+    const orderData = {
+      user: userId,
+      items: [{ product: droneId, quantity: quantity || 1 }],
+      totalPrice: (drone.discountedPrice || drone.price) * (quantity || 1),
+      status: 'Pending'
+    };
+
+    if (existingOrder) {
+      // Replace the existing pending order with the new one
+      existingOrder.items = orderData.items;
+      existingOrder.totalPrice = orderData.totalPrice;
+      await existingOrder.save();
+      return res.status(200).json({ success: true, order: existingOrder });
+    } else {
+      // Create a new order if none exists
+      const newOrder = new Order(orderData);
+      await newOrder.save();
+      return res.status(201).json({ success: true, order: newOrder });
+    }
+  } catch (err) {
+    console.error("Buy now error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+

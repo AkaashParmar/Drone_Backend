@@ -62,7 +62,9 @@ const droneSchema = new mongoose.Schema({
     controlRange: String,
     battery: String,
     display: String
-  }
+  },
+
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 
 }, { timestamps: true });
 
