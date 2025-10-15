@@ -1,40 +1,78 @@
 import DroneListing from "../models/sellModel.js";
 import fs from "fs";
 import { v2 as cloudinary } from "cloudinary";
+import sendEmail from "../utils/sendEmail.js";
 
-// Create new drone listing
 export const createDroneListing = async (req, res) => {
-    try {
-        let formData = req.body;
+  try {
+    let formData = req.body;
 
-        // If sent as string (multipart/form-data), parse it
-        if (typeof formData === "string") {
-            formData = JSON.parse(formData);
-        }
-
-        // Handle multiple images if uploaded
-        if (req.files && req.files.length > 0) {
-            const imageUrls = [];
-
-            for (const file of req.files) {
-                const result = await cloudinary.uploader.upload(file.path, {
-                    folder: "drone_listings",
-                });
-                imageUrls.push(result.secure_url);
-                fs.unlinkSync(file.path); // delete temp file
-            }
-
-            formData.images = imageUrls;
-        }
-
-        const newListing = new DroneListing(formData);
-        await newListing.save();
-
-        res.status(201).json({ success: true, data: newListing });
-    } catch (err) {
-        console.error("Create listing error:", err);
-        res.status(400).json({ success: false, message: err.message });
+    // Parse if sent as string (for multipart/form-data)
+    if (typeof formData === "string") {
+      formData = JSON.parse(formData);
     }
+
+    // Handle multiple images if uploaded
+    if (req.files && req.files.length > 0) {
+      const imageUrls = [];
+
+      for (const file of req.files) {
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: "drone_listings",
+        });
+        imageUrls.push(result.secure_url);
+        fs.unlinkSync(file.path); 
+      }
+
+      formData.images = imageUrls;
+    }
+
+    // Save to DB
+    const newListing = await DroneListing.create(formData);
+
+    // Send email to admin using sendEmail utility ---
+    const adminEmail = process.env.EMAIL_USER; 
+
+    if (adminEmail) {
+      const htmlImages = (newListing.images || [])
+        .map((url) => `<img src="${url}" width="200" style="margin: 5px;" />`)
+        .join("");
+
+      const subject = "📌 New Drone Listing Submitted";
+      const html = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background: #f9fafb;">
+          <h2>New Drone Listing</h2>
+          <p>A new drone listing has been submitted with the following details:</p>
+          <ul>
+            <li><b>Name:</b> ${newListing.name}</li>
+            <li><b>Email:</b> ${newListing.email}</li>
+            <li><b>Phone:</b> ${newListing.phone}</li>
+            <li><b>Drone Model:</b> ${newListing.droneModel}</li>
+            <li><b>Condition:</b> ${newListing.condition}</li>
+            <li><b>Flight Hours:</b> ${newListing.flightHours}</li>
+            <li><b>Price:</b> $${newListing.price}</li>
+            <li><b>Description:</b> ${newListing.description || "N/A"}</li>
+          </ul>
+          <p><b>Images:</b></p>
+          <div style="display:flex; flex-wrap: wrap;">${htmlImages}</div>
+          <p>Reply directly to the user to contact them.</p>
+        </div>
+      `;
+
+      await sendEmail(adminEmail, subject, html, newListing.email);
+    } else {
+      console.warn("ADMIN_EMAIL is not defined. Skipping email notification.");
+    }
+
+    res.status(201).json({
+      success: true,
+      data: newListing,
+      message: "Listing created and admin notified (if admin email is set).",
+    });
+  } catch (err) {
+    console.error("Create listing error:", err);
+    res.status(400).json({ success: false, message: err.message });
+  }
 };
 
 // Get all drone listings
