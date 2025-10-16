@@ -11,6 +11,7 @@ import rentRoutes from "./routes/rentRoutes.js";
 import partnerRoutes from "./routes/partnerRoutes.js";
 import sellRoutes from "./routes/sellRoutes.js";
 import adminRoutes from './routes/adminRoutes.js';
+import serviceRoutes from './routes/serviceRoutes.js'
 
 dotenv.config();
 await connectDB();
@@ -42,6 +43,7 @@ app.use("/api/rent", rentRoutes);
 app.use("/api/partners", partnerRoutes);
 app.use("/api/sell", sellRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/services', serviceRoutes);
 
 // error handler
 app.use((err, req, res, next) => {
