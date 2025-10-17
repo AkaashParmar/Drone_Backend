@@ -12,12 +12,10 @@ export const createDrone = async (req, res) => {
       droneData = JSON.parse(droneData);
     }
 
-    // Add createdBy field
     if (req.user && req.user.id) {
       droneData.createdBy = req.user.id;
     }
 
-    // Handle image upload
     if (req.file && req.file.path) {
       const resultCloud = await cloudinary.uploader.upload(req.file.path, {
         folder: "drones",
@@ -62,18 +60,17 @@ export const updateDrone = async (req, res) => {
       return res.status(404).json({ success: false, message: "Drone not found" });
     }
 
-    // If a new image is uploaded, replace the old one
     if (req.file && req.file.path) {
       const resultCloud = await cloudinary.uploader.upload(req.file.path, {
         folder: "drones",
       });
 
-      fs.unlinkSync(req.file.path); // delete local temp file
+      fs.unlinkSync(req.file.path); 
       updateData.image = resultCloud.secure_url;
     }
 
     const updatedDrone = await Drone.findByIdAndUpdate(id, updateData, {
-      new: true, // return updated document
+      new: true,
       runValidators: true,
     });
 
@@ -103,6 +100,40 @@ export const deleteDrone = async (req, res) => {
     res.json({ success: true, message: "Drone deleted successfully" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const getRelatedAccessories = async (req, res) => {
+  try {
+    const { droneId } = req.params;
+
+    const drone = await Drone.findById(droneId);
+    if (!drone) {
+      return res.status(404).json({ success: false, message: 'Drone not found' });
+    }
+
+    // Find accessories related by brand or name match
+    const relatedAccessories = await Drone.find({
+      category: 'Accessory',
+      $or: [
+        { name: { $regex: drone.name.split(' ')[0], $options: 'i' } }, 
+        { description: { $regex: drone.brand, $options: 'i' } } 
+      ]
+    });
+
+    res.status(200).json({
+      success: true,
+      drone: drone.name,
+      relatedAccessories
+    });
+
+  } catch (error) {
+    console.error('Error fetching related accessories:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
   }
 };
 

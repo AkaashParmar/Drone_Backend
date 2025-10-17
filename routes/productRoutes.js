@@ -5,6 +5,7 @@ import {
     updateDrone,
     getDroneById,
     deleteDrone,
+    getRelatedAccessories,
     buyNow,
 } from "../controllers/productController.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -17,6 +18,7 @@ router.get("/", protect, getDrones);
 router.put("/:id", protect, upload.single("image"), updateDrone);
 router.get("/:id",protect, getDroneById);
 router.delete("/:id", protect, deleteDrone);
+router.get('/:droneId/related-accessories', protect, getRelatedAccessories);
 router.post('/buy-now', protect, buyNow);
 
 export default router;
