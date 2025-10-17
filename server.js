@@ -4,6 +4,7 @@ import connectDB from "./config/db.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import Razorpay from 'razorpay';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import productRoutes from "./routes/productRoutes.js";
@@ -11,7 +12,8 @@ import rentRoutes from "./routes/rentRoutes.js";
 import partnerRoutes from "./routes/partnerRoutes.js";
 import sellRoutes from "./routes/sellRoutes.js";
 import adminRoutes from './routes/adminRoutes.js';
-import serviceRoutes from './routes/serviceRoutes.js'
+import serviceRoutes from './routes/serviceRoutes.js';
+import courseRoutes from './routes/courseRoutes.js';
 
 dotenv.config();
 await connectDB();
@@ -44,6 +46,28 @@ app.use("/api/partners", partnerRoutes);
 app.use("/api/sell", sellRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/courses', courseRoutes);
+
+
+// get Razorpay key (for frontend to access)
+app.get("/get-razorpay-key", (req, res) => {                
+  try {
+    console.log("Razorpay Keys fetched successfully");
+    res.status(200).json({
+      key: process.env.RAZORPAY_KEY_ID,
+      secret: process.env.RAZORPAY_KEY_SECRET, 
+    });
+  } catch (error) {
+    console.error("Error fetching Razorpay keys:", error);
+    res.status(500).json({ message: "Failed to fetch keys", error: error.message });
+  }
+});
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
 
 // error handler
 app.use((err, req, res, next) => {

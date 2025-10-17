@@ -3,7 +3,20 @@ import mongoose from 'mongoose';
 const droneSchema = new mongoose.Schema({
   name: { type: String, required: true },
   category: { type: String, enum: ['Drone', 'Accessory'], default: 'Drone' },
-  brand: { type: String, enum: ['DJI', 'International', 'Indian', 'Used'], required: true },
+  subcategory: {
+    type: String,
+    required: function () {
+      return this.category === 'Accessory';
+    },
+    default: null
+  },
+  brand: {
+    type: String,
+    enum: ['DJI', 'International', 'Indian', 'Used'],
+    required: function () {
+      return this.category === 'Drone';
+    }
+  },
   image: { type: String, default: '' },
   description: { type: String, default: '' },
   price: { type: Number, required: true },
