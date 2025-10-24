@@ -14,6 +14,8 @@ import sellRoutes from "./routes/sellRoutes.js";
 import adminRoutes from './routes/adminRoutes.js';
 import serviceRoutes from './routes/serviceRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
+import razorpayRoutes from "./routes/razorpay.js";
+import industryRoutes from "./routes/industryRoutes.js";
 
 dotenv.config();
 await connectDB();
@@ -47,26 +49,28 @@ app.use("/api/sell", sellRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/payment', razorpayRoutes);
+app.use("/api/industries", industryRoutes);
 
 
 // get Razorpay key (for frontend to access)
-app.get("/get-razorpay-key", (req, res) => {                
-  try {
-    console.log("Razorpay Keys fetched successfully");
-    res.status(200).json({
-      key: process.env.RAZORPAY_KEY_ID,
-      secret: process.env.RAZORPAY_KEY_SECRET, 
-    });
-  } catch (error) {
-    console.error("Error fetching Razorpay keys:", error);
-    res.status(500).json({ message: "Failed to fetch keys", error: error.message });
-  }
-});
+// app.get("/get-razorpay-key", (req, res) => {                
+//   try {
+//     console.log("Razorpay Keys fetched successfully");
+//     res.status(200).json({
+//       key: process.env.RAZORPAY_KEY_ID,
+//       secret: process.env.RAZORPAY_KEY_SECRET, 
+//     });
+//   } catch (error) {
+//     console.error("Error fetching Razorpay keys:", error);
+//     res.status(500).json({ message: "Failed to fetch keys", error: error.message });
+//   }
+// });
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// const razorpay = new Razorpay({
+//   key_id: process.env.RAZORPAY_KEY_ID,
+//   key_secret: process.env.RAZORPAY_KEY_SECRET,
+// });
 
 
 // error handler
