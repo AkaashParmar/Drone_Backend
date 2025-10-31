@@ -16,6 +16,8 @@ import serviceRoutes from './routes/serviceRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
 import razorpayRoutes from "./routes/razorpay.js";
 import industryRoutes from "./routes/industryRoutes.js";
+import pages from './models/pages.js';
+import PilotRoutes from './routes/pilotRoutes.js';
 
 dotenv.config();
 await connectDB();
@@ -51,15 +53,31 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/payment', razorpayRoutes);
 app.use("/api/industries", industryRoutes);
+app.use("/api/pages", pages);
+app.use("/api/pilots", PilotRoutes);
 
 
-// get Razorpay key (for frontend to access)
-// app.get("/get-razorpay-key", (req, res) => {                
+
+app.get("/api/get-razorpay-key", (req, res) => {
+  try {
+    console.log("Razorpay Keys fetched successfully");
+    res.status(200).json({
+      key: process.env.RAZORPAY_KEY_ID,
+      secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  } catch (error) {
+    console.error("Error fetching Razorpay keys:", error);
+    res.status(500).json({ message: "Failed to fetch keys", error: error.message });
+  }
+});
+
+// Razorpay instance
+// app.get("/get-razorpay-key", (req, res) => {
 //   try {
 //     console.log("Razorpay Keys fetched successfully");
 //     res.status(200).json({
 //       key: process.env.RAZORPAY_KEY_ID,
-//       secret: process.env.RAZORPAY_KEY_SECRET, 
+//       secret: process.env.RAZORPAY_KEY_SECRET, // Optional, don’t expose in frontend
 //     });
 //   } catch (error) {
 //     console.error("Error fetching Razorpay keys:", error);
@@ -67,16 +85,39 @@ app.use("/api/industries", industryRoutes);
 //   }
 // });
 
-// const razorpay = new Razorpay({
-//   key_id: process.env.RAZORPAY_KEY_ID,
-//   key_secret: process.env.RAZORPAY_KEY_SECRET,
-// });
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
+app.post("/create-order", async (req, res) => {
+  console.log("Create order");
+  console.log("body", req.body);
 
-// error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ message: 'Server error', error: err.message });
+  try {
+    const { amount } = req.body;
+
+    if (!amount) {
+      return res.status(400).json({
+        success: false,
+        message: "Amount is required to create order",
+      });
+    }
+
+    const options = {
+      amount: amount * 100, // convert to paise
+      currency: "INR",
+      receipt: "receipt_" + Math.random().toString(36).substring(7), // random ID
+    };
+
+    const order = await razorpay.orders.create(options);
+    console.log("Order created successfully:", order);
+
+    res.status(200).json(order);
+  } catch (err) {
+    console.error("Razorpay order creation error:", err);
+    res.status(500).json({ error: "Something went wrong while creating Razorpay order" });
+  }
 });
 
 // Start Server
