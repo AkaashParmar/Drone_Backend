@@ -18,6 +18,7 @@ import razorpayRoutes from "./routes/razorpay.js";
 import industryRoutes from "./routes/industryRoutes.js";
 import pages from './models/pages.js';
 import PilotRoutes from './routes/pilotRoutes.js';
+import addressRoutes from './routes/addressRoutes.js';
 
 dotenv.config();
 await connectDB();
@@ -55,6 +56,7 @@ app.use('/api/payment', razorpayRoutes);
 app.use("/api/industries", industryRoutes);
 app.use("/api/pages", pages);
 app.use("/api/pilots", PilotRoutes);
+app.use('/api/addresses', addressRoutes);
 
 
 

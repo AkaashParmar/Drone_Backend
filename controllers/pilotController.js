@@ -76,17 +76,20 @@ export const createPilot = async (req, res) => {
     });
 
     // === 2️⃣ Send email to Admin ===
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.ADMIN_EMAIL,
-        pass: process.env.ADMIN_PASS,
-      },
-    });
+  const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com", // works if you are using a Gmail inbox
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 
     const mailOptions = {
-      from: `"Pilot Onboarding" <${process.env.ADMIN_EMAIL}>`,
-      to: process.env.ADMIN_EMAIL, // admin email
+      from: `"Pilot Onboarding" <${process.env.EMAIL_USER}>`,
+      to: process.env.ADMIN_EMAIL || "akash@netfotech.in.com", // admin email
       subject: `🛩️ New Pilot Application: ${firstName} ${lastName}`,
       html: `
         <h2>New Pilot Application Submitted</h2>

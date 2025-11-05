@@ -32,13 +32,7 @@ const pilotSchema = new mongoose.Schema(
     availableForHire: { type: Boolean, default: true },
 
     // === Equipment ===
-    drones: [
-      {
-        model: String,
-        cameraType: String,
-        flightTime: String,
-      },
-    ],
+   drones: [String],
 
     // === Capabilities ===
     capabilities: [String], // e.g., "Aerial Mapping", "Cinematography"
