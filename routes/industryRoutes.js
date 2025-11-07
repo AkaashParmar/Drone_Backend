@@ -11,8 +11,8 @@ import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", protect, upload.array("images", 4), createIndustry);
-router.get("/", getIndustries); 
+router.post("/create", upload.array("images", 4), createIndustry);
+router.get("/get", getIndustries); 
 router.get("/:slug", getIndustryBySlug); 
 router.put("/:id", upload.array("images", 4), updateIndustry); 
 router.delete("/:id", deleteIndustry); 
