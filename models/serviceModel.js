@@ -1,5 +1,17 @@
 import mongoose from 'mongoose';
 
+const stepSchema = new mongoose.Schema({
+  icon: { type: String },
+  title: { type: String, required: true },
+  timestamp: { type: String },
+  description: { type: String, required: true },
+}, { _id: false });
+
+const faqSchema = new mongoose.Schema({
+  question: { type: String, required: true },
+  answer: { type: String, required: true },
+});
+
 const serviceSchema = new mongoose.Schema({
   serviceId: {
     type: String,
@@ -20,8 +32,13 @@ const serviceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  steps: {
+    type: [stepSchema],
+    required: true,
+  },
+  faqs: { type: [faqSchema], default: [] },
   image: {
-    type: String, 
+    type: String,
     required: true,
   },
 }, { timestamps: true });
