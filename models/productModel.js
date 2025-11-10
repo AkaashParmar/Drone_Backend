@@ -76,6 +76,14 @@ const droneSchema = new mongoose.Schema({
     battery: String,
     display: String
   },
+  
+  inTheBox: [
+  {
+    name: { type: String, required: true },
+    qty: { type: Number, default: 1 },
+  },
+],
+
 
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 

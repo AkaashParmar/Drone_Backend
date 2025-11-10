@@ -176,3 +176,49 @@ export const buyNow = async (req, res) => {
   }
 };
 
+
+// GET In the Box Items for a Drone
+export const getInTheBoxItems = async (req, res) => {
+  try {
+    const { droneId } = req.params;
+    const drone = await Drone.findById(droneId);
+
+    if (!drone) {
+      return res.status(404).json({ message: "Drone not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      inTheBox: drone.inTheBox || [],
+    });
+  } catch (error) {
+    console.error("❌ Error fetching In the Box items:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+// ADD or UPDATE "In the Box" items for a Drone
+export const addInTheBoxItems = async (req, res) => {
+  try {
+    const { droneId } = req.params;
+    const { inTheBox } = req.body; // Expecting array of { name, qty }
+
+    const drone = await Drone.findById(droneId);
+    if (!drone) {
+      return res.status(404).json({ message: "Drone not found" });
+    }
+
+    drone.inTheBox = inTheBox; // overwrite existing items
+    await drone.save();
+
+    res.status(200).json({
+      success: true,
+      message: "In the Box items updated successfully",
+      inTheBox: drone.inTheBox,
+    });
+  } catch (error) {
+    console.error("❌ Error adding In the Box items:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+

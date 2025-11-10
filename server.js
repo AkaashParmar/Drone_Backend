@@ -19,6 +19,7 @@ import industryRoutes from "./routes/industryRoutes.js";
 import pages from './models/pages.js';
 import PilotRoutes from './routes/pilotRoutes.js';
 import addressRoutes from './routes/addressRoutes.js';
+import blogRoutes from './routes/blogRoutes.js';
 
 dotenv.config();
 await connectDB();
@@ -57,7 +58,7 @@ app.use("/api/industries", industryRoutes);
 app.use("/api/pages", pages);
 app.use("/api/pilots", PilotRoutes);
 app.use('/api/addresses', addressRoutes);
-
+app.use("/api/blogs", blogRoutes);
 
 
 app.get("/api/get-razorpay-key", (req, res) => {
@@ -73,19 +74,6 @@ app.get("/api/get-razorpay-key", (req, res) => {
   }
 });
 
-// Razorpay instance
-// app.get("/get-razorpay-key", (req, res) => {
-//   try {
-//     console.log("Razorpay Keys fetched successfully");
-//     res.status(200).json({
-//       key: process.env.RAZORPAY_KEY_ID,
-//       secret: process.env.RAZORPAY_KEY_SECRET, // Optional, don’t expose in frontend
-//     });
-//   } catch (error) {
-//     console.error("Error fetching Razorpay keys:", error);
-//     res.status(500).json({ message: "Failed to fetch keys", error: error.message });
-//   }
-// });
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
