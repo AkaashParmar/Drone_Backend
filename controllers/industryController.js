@@ -203,8 +203,12 @@ export const deleteIndustry = async (req, res) => {
 
 export const updateSectionImages = async (req, res) => {
   try {
-    const { id } = req.params;
-    const sectionIndex = parseInt(req.params.sectionIndex, 10);
+    const { id, sectionIndex } = req.params;
+    const parsedSectionIndex = parseInt(sectionIndex, 10);
+
+    if (isNaN(parsedSectionIndex)) {
+      return res.status(400).json({ success: false, message: "Invalid section index" });
+    }
 
     let { sectionImagesToRemove } = req.body;
 
@@ -217,33 +221,33 @@ export const updateSectionImages = async (req, res) => {
       return res.status(404).json({ success: false, message: "Industry not found" });
     }
 
-    // Ensure sectionIndex is valid
     if (
-      isNaN(sectionIndex) ||
-      sectionIndex < 0 ||
-      sectionIndex >= industry.sections.length
+      parsedSectionIndex < 0 ||
+      parsedSectionIndex >= industry.sections.length
     ) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid section index",
-      });
+      return res.status(400).json({ success: false, message: "Invalid section index" });
     }
 
-    const section = industry.sections[sectionIndex];
+    const section = industry.sections[parsedSectionIndex];
 
-    // Remove old images
-    if (Array.isArray(sectionImagesToRemove) && sectionImagesToRemove.length > 0) {
-      section.image = section.image.filter(img => !sectionImagesToRemove.includes(img));
-    }
-
-    // Upload new images
+    // If new images are uploaded, replace existing ones entirely
     if (req.files && req.files.length > 0) {
+
+      const uploadedUrls = [];
       for (const file of req.files) {
         const uploaded = await cloudinary.uploader.upload(file.path, {
-          folder: "industry/sections"
+          folder: "industry/sections",
         });
-        section.image.push(uploaded.secure_url);
+        uploadedUrls.push(uploaded.secure_url);
       }
+
+      // Replace the image array with new URLs
+      section.image = uploadedUrls;
+    } else if (Array.isArray(sectionImagesToRemove) && sectionImagesToRemove.length > 0) {
+      // Only remove selected images if no new uploads
+      section.image = section.image.filter(
+        (img) => !sectionImagesToRemove.includes(img)
+      );
     }
 
     await industry.save();
@@ -251,11 +255,15 @@ export const updateSectionImages = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Section images updated successfully",
-      data: industry.sections[sectionIndex]
+      data: industry.sections[parsedSectionIndex],
     });
-
   } catch (error) {
     console.error("Error updating section images:", error);
-    res.status(500).json({ success: false, message: "Server Error", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
   }
 };
+
