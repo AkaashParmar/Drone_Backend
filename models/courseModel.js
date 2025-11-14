@@ -10,35 +10,67 @@ const reviewSchema = new mongoose.Schema({
 const curriculumSchema = new mongoose.Schema({
   day: { type: String, required: true },
   title: { type: String, required: true },
-  details: [{ type: String }],
+  details: [{ type: String, required: true }],
 });
 
 const infoSchema = new mongoose.Schema({
-  title: { type: String },
-  value: { type: String },
+  title: { type: String, required: true },
+  value: { type: String, required: true },
 });
 
 const learningPointSchema = new mongoose.Schema({
-  title: { type: String },
-  points: [{ type: String }],
+  title: { type: String, required: true },
+  points: [{ type: String, required: true }],
 });
+
+const enrollmentSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    phone: { type: String, required: true },
+    course: { type: String, required: true },
+    email: { type: String, required: true },
+    message: { type: String },
+    status: { type: String, enum: ["Pending", "Processed"], default: "Pending" },
+    submittedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
 
 const courseSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true }, 
-    type: { type: String, enum: ["Basic", "Advanced", "Professional"], required: true },
+    name: { type: String, required: true },
+    type: { type: String, required: true },
     description: { type: String, required: true },
+    overview: { type: String },
     duration: { type: String, default: "5 Days" },
     mode: { type: String, default: "Hybrid" },
-    image: { type: String, default: "" }, 
+    image: { type: String, default: "" },
+    slug: { type: String, unique: true, lowercase: true, trim: true },
 
-    // Subsections
+    // Subdocuments
     courseInfo: [infoSchema],
     whatYouLearn: [learningPointSchema],
-    reviews: [reviewSchema],
     curriculum: [curriculumSchema],
+    reviews: [reviewSchema],
+    enrollments: [enrollmentSchema],
+
+    // Optional UI helper fields
+    ctaText: { type: String, default: "Enroll Today" },
+    ctaLink: { type: String, default: "/EnrollmentForm" },
   },
   { timestamps: true }
 );
+
+
+// Generate slug before saving
+courseSchema.pre("save", function (next) {
+  if (this.isModified("name")) {
+    this.slug = this.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+  }
+  next();
+});
 
 export default mongoose.model("Course", courseSchema);

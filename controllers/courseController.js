@@ -51,6 +51,17 @@ export const getAllCourses = async (req, res) => {
     }
 };
 
+
+// Get all courses (for dropdown)
+export const getAllCoursesdropdown = async (req, res) => {
+  try {
+    const courses = await Course.find({}, "name"); 
+    res.status(200).json({ success: true, data: courses });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // Get single course by ID or type
 export const getCourse = async (req, res) => {
     try {
@@ -62,6 +73,16 @@ export const getCourse = async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, message: "Error fetching course", error: error.message });
     }
+};
+
+export const getCourseBySlug = async (req, res) => {
+  try {
+    const course = await Course.findOne({ slug: req.params.slug });
+    if (!course) return res.status(404).json({ success: false, message: "Course not found" });
+    res.status(200).json({ success: true, data: course });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 // Update course
@@ -127,5 +148,22 @@ export const updateCourseImage = async (req, res) => {
       message: "Error updating course image",
       error: error.message,
     });
+  }
+};
+
+export const addEnrollment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phone, course, email, message } = req.body;
+
+    const updatedCourse = await Course.findByIdAndUpdate(
+      id,
+      { $push: { enrollments: { name, phone, course, email, message } } },
+      { new: true }
+    );
+
+    res.status(200).json({ success: true, data: updatedCourse });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
