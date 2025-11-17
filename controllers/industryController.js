@@ -267,3 +267,32 @@ export const updateSectionImages = async (req, res) => {
   }
 };
 
+// homepage api to fetch industries name and image
+export const getIndustryTitlesWithImage = async (req, res) => {
+  try {
+    const industries = await Industry.find({}, { 
+      title: 1,
+      images: 1 
+    });
+
+    const result = industries.map(ind => ({
+      _id: ind._id,
+      title: ind.title,
+      image: ind.images?.length > 0 ? ind.images[0] : null
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error("Error fetching industry titles:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
+
