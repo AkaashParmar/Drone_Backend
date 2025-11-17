@@ -6,6 +6,7 @@ import {
   updateIndustry,
   updateSectionImages,
   deleteIndustry,
+  getIndustryTitlesWithImage,
 } from "../controllers/industryController.js";
 // import { protect } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
@@ -28,5 +29,7 @@ router.put(
 );
 
 router.delete("/:id", deleteIndustry);
+
+router.get("/industry/titles", getIndustryTitlesWithImage);
 
 export default router;

@@ -6,6 +6,7 @@ import {
     getServiceById,
     updateService,
     addOrUpdateFAQs,
+    getServiceSummary
 } from '../controllers/serviceController.js';
 // import { protect } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
@@ -18,5 +19,6 @@ router.get('/id/:id', getServiceById);
 router.get('/type/:type', getServiceByType);
 router.put("/update", upload.array("image", 1), updateService);
 router.post("/faqs/add-update", addOrUpdateFAQs);
+router.get("/summary", getServiceSummary);
 
 export default router;
