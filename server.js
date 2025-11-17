@@ -20,6 +20,9 @@ import pages from './models/pages.js';
 import PilotRoutes from './routes/pilotRoutes.js';
 import addressRoutes from './routes/addressRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
+import contactRoutes from "./routes/contactRoutes.js";
+import repairRoutes from "./routes/repairRouts.js";
+import planRoutes from "./routes/planRoutes.js";
 
 dotenv.config();
 await connectDB();
@@ -59,7 +62,9 @@ app.use("/api/pages", pages);
 app.use("/api/pilots", PilotRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use("/api/blogs", blogRoutes);
-
+app.use("/api/contact", contactRoutes);
+app.use("/api/repair",repairRoutes);
+app.use("/api/plans", planRoutes);
 
 app.get("/api/get-razorpay-key", (req, res) => {
   try {
