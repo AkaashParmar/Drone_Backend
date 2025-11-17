@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   name: { type: String, required: true },
   review: { type: String, required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
   avatar: { type: String, default: "" },
 });
+
 
 const curriculumSchema = new mongoose.Schema({
   day: { type: String, required: true },
@@ -25,6 +27,7 @@ const learningPointSchema = new mongoose.Schema({
 
 const enrollmentSchema = new mongoose.Schema(
   {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true },
     phone: { type: String, required: true },
     course: { type: String, required: true },
@@ -35,6 +38,7 @@ const enrollmentSchema = new mongoose.Schema(
   },
   { _id: false }
 );
+
 
 const courseSchema = new mongoose.Schema(
   {
