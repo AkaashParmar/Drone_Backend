@@ -221,4 +221,24 @@ export const addInTheBoxItems = async (req, res) => {
   }
 };
 
+export const getAllDrones = async (req, res) => {
+  try {
+    const drones = await Drone.find({ category: "Drone" });
+
+    res.status(200).json({
+      success: true,
+      count: drones.length,
+      data: drones
+    });
+
+  } catch (error) {
+    console.error("Error fetching drones:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message
+    });
+  }
+};
+
 
