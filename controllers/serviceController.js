@@ -207,3 +207,21 @@ export const addOrUpdateFAQs = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+export const getServiceSummary = async (req, res) => {
+  try {
+    const services = await Service.find({}, "serviceType title image");
+
+    res.status(200).json({
+      success: true,
+      data: services,
+    });
+  } catch (error) {
+    console.error("Error fetching service summary:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
