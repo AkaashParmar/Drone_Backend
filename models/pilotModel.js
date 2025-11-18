@@ -1,5 +1,32 @@
 import mongoose from "mongoose";
 
+
+const qualificationSchema = new mongoose.Schema({
+  selected: [String],          // DGCA, FAA, EASA, etc.
+  expiry: String,              // Expiry date
+  document: String,            // File path
+  otherText: String            // Custom text
+});
+
+const essentialsSchema = new mongoose.Schema({
+  qualifications: [qualificationSchema],
+  experience: String,          // "0-1", "1-2", "5+" etc.
+  skillLevel: String           // Standard / Advanced / Expert
+});
+
+const insurancePolicySchema = new mongoose.Schema({
+  provider: String,
+  type: String,
+  document: String,   // file path
+  validUntil: String,
+});
+
+const insuranceSchema = new mongoose.Schema({
+  hasInsurance: Boolean,
+  policies: [insurancePolicySchema],
+});
+
+
 const pilotSchema = new mongoose.Schema(
   {
     // === Personal ===
@@ -25,29 +52,45 @@ const pilotSchema = new mongoose.Schema(
     portfolioLinks: [String], // e.g., YouTube, website URLs
 
     // === Essentials ===
-    licenseNumber: { type: String },
-    expiryDate: { type: String },
-    experienceYears: { type: Number },
-    companyName: { type: String },
-    availableForHire: { type: Boolean, default: true },
+    essentials: essentialsSchema,
 
     // === Equipment ===
-   drones: [String],
+    drones: [String],
+    cameras: [String],
 
     // === Capabilities ===
-    capabilities: [String], // e.g., "Aerial Mapping", "Cinematography"
-    certifications: [String],
+    capabilities: [String],              // Existing
+    certifications: [String],            // Existing
+
+    maxWindSpeed: [String],              // ⬅ NEW
+    otherCapabilities: [String],         // ⬅ NEW
+    additionalServices: [String],        // ⬅ NEW
+
+    weightLimit: { type: Number },       // ⬅ NEW (kg)
+    flightTimeLimit: { type: Number },
 
     // === Insurance ===
-    insuranceProvider: { type: String },
-    policyNumber: { type: String },
-    expiry: { type: String },
+  insurance: insuranceSchema,
 
     // === Expertise ===
-    expertiseAreas: [String], // e.g., "Agriculture", "Construction"
-    projectCount: { type: Number },
-    notableClients: [String],
+expertiseAreas: [String],
+projectCount: { type: Number },
+notableClients: [String],
+
+ // === Specialisms (NEW) ===
+    specialisms: [
+      {
+        types: [String],
+        experience: String,
+        hourlyRate: Number,
+        halfDayRate: Number,
+        dayRate: Number,
+      },
+    ],
+
+    termsAccepted: { type: Boolean, default: false },
   },
+
   { timestamps: true }
 );
 

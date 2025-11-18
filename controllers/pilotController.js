@@ -3,6 +3,50 @@ import nodemailer from "nodemailer";
 
 export const createPilot = async (req, res) => {
   try {
+    // === PARSE JSON FIELDS ===
+    const parsedPortfolioLinks = req.body.portfolioLinks ? JSON.parse(req.body.portfolioLinks) : [];
+    const parsedDrones = req.body.drones ? JSON.parse(req.body.drones) : [];
+    const parsedCapabilities = req.body.capabilities ? JSON.parse(req.body.capabilities) : [];
+    const parsedCertifications = req.body.certifications ? JSON.parse(req.body.certifications) : [];
+    const parsedExpertiseAreas = req.body.expertiseAreas ? JSON.parse(req.body.expertiseAreas) : [];
+    const parsedNotableClients = req.body.notableClients ? JSON.parse(req.body.notableClients) : [];
+    const parsedCameras = req.body.cameras ? JSON.parse(req.body.cameras) : [];
+    const parsedMaxWindSpeed = req.body.maxWindSpeed ? JSON.parse(req.body.maxWindSpeed) : [];
+    const parsedOtherCapabilities = req.body.otherCapabilities ? JSON.parse(req.body.otherCapabilities) : [];
+    const parsedAdditionalServices = req.body.additionalServices ? JSON.parse(req.body.additionalServices) : [];
+    const parsedSpecialisms = req.body.specialisms
+      ? JSON.parse(req.body.specialisms)
+      : [];
+    const parsedTermsAccepted = req.body.termsAccepted === "true";
+
+    // === PARSE Essentials OBJECT ===
+    let essentials = req.body.essentials ? JSON.parse(req.body.essentials) : null;
+    let insurance = req.body.insurance ? JSON.parse(req.body.insurance) : null;
+    // Attach qualification documents
+    if (essentials && req.files?.qualificationDocuments) {
+      req.files.qualificationDocuments.forEach((file, idx) => {
+        if (essentials.qualifications[idx]) {
+          essentials.qualifications[idx].document = file.path;
+        }
+      });
+    }
+    if (insurance && req.files?.insuranceDocuments) {
+      req.files.insuranceDocuments.forEach((file, idx) => {
+        if (insurance.policies[idx]) {
+          insurance.policies[idx].document = file.path;
+        }
+      });
+    }
+    // Required images
+    const photo = req.files?.photo?.[0]?.path;
+    const logo = req.files?.logo?.[0]?.path;
+
+    // Gallery images
+    const galleryImages = req.files?.galleryImages
+      ? req.files.galleryImages.map((img) => img.path)
+      : [];
+
+    // BASIC REQUIRED FIELDS
     const {
       firstName,
       lastName,
@@ -17,31 +61,21 @@ export const createPilot = async (req, res) => {
       state,
       city,
       pincode,
-      portfolioLinks,
       licenseNumber,
       expiryDate,
-      experienceYears,
       companyName,
       availableForHire,
-      drones,
-      capabilities,
-      certifications,
       insuranceProvider,
       policyNumber,
       expiry,
-      expertiseAreas,
       projectCount,
-      notableClients,
     } = req.body;
-
-    const photo = req.files?.photo?.[0]?.path;
-    const logo = req.files?.logo?.[0]?.path;
 
     if (!firstName || !lastName || !email || !mobile || !description || !currency || !photo) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // === 1️⃣ Save in DB ===
+    // === SAVE TO DB ===
     const pilot = await Pilot.create({
       firstName,
       lastName,
@@ -51,6 +85,8 @@ export const createPilot = async (req, res) => {
       currency,
       photo,
       logo,
+
+      // Location
       locationType,
       coverageArea,
       address,
@@ -58,74 +94,110 @@ export const createPilot = async (req, res) => {
       state,
       city,
       pincode,
-      portfolioLinks: portfolioLinks ? JSON.parse(portfolioLinks) : [],
+
+      // Portfolio
+      portfolioLinks: parsedPortfolioLinks,
+      galleryImages,
+
+      // Essentials (FULL OBJECT)
+      essentials,
+
+      // Company + License
+      companyName,
+      availableForHire: availableForHire === "true" || availableForHire === true,
       licenseNumber,
       expiryDate,
-      experienceYears,
-      companyName,
-      availableForHire,
-      drones: drones ? JSON.parse(drones) : [],
-      capabilities: capabilities ? JSON.parse(capabilities) : [],
-      certifications: certifications ? JSON.parse(certifications) : [],
-      insuranceProvider,
-      policyNumber,
-      expiry,
-      expertiseAreas: expertiseAreas ? JSON.parse(expertiseAreas) : [],
+
+      // Equipment
+      drones: parsedDrones,
+      cameras: parsedCameras,
+
+      // Capabilities
+      capabilities: parsedCapabilities,
+      certifications: parsedCertifications,
+      // New Capabilities
+      maxWindSpeed: parsedMaxWindSpeed,
+      otherCapabilities: parsedOtherCapabilities,
+      additionalServices: parsedAdditionalServices,
+      weightLimit: req.body.weightLimit,
+      flightTimeLimit: req.body.flightTimeLimit,
+
+
+      // Insurance
+      insurance: insurance,
+
+
+      // Expertise
+      expertiseAreas: parsedExpertiseAreas,
       projectCount,
-      notableClients: notableClients ? JSON.parse(notableClients) : [],
+      notableClients: parsedNotableClients,
+      specialisms: parsedSpecialisms,
+      termsAccepted: parsedTermsAccepted
     });
 
-    // === 2️⃣ Send email to Admin ===
-  const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com", // works if you are using a Gmail inbox
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
+    // === EMAIL ===
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
     const mailOptions = {
       from: `"Pilot Onboarding" <${process.env.EMAIL_USER}>`,
-      to: process.env.ADMIN_EMAIL || "akash@netfotech.in.com", // admin email
+      to: process.env.ADMIN_EMAIL || "akash@netfotech.in",
       subject: `🛩️ New Pilot Application: ${firstName} ${lastName}`,
       html: `
-        <h2>New Pilot Application Submitted</h2>
-        <p><b>Name:</b> ${firstName} ${lastName}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Mobile:</b> ${mobile}</p>
-        <p><b>Description:</b> ${description}</p>
-        <p><b>Currency:</b> ${currency}</p>
-        <p><b>Location:</b> ${address || "N/A"}, ${city || ""}, ${state || ""}, ${country || ""}</p>
-        <p><b>License:</b> ${licenseNumber || "N/A"} (Exp: ${expiryDate || "N/A"})</p>
-        <p><b>Experience:</b> ${experienceYears || "N/A"} years</p>
-        <p><b>Company:</b> ${companyName || "N/A"}</p>
-        <p><b>Capabilities:</b> ${(capabilities && JSON.parse(capabilities).join(", ")) || "N/A"}</p>
-        <p><b>Expertise Areas:</b> ${(expertiseAreas && JSON.parse(expertiseAreas).join(", ")) || "N/A"}</p>
-        <p><b>Insurance:</b> ${insuranceProvider || "N/A"} | Policy: ${policyNumber || "N/A"}</p>
-        <p><b>Drones:</b> ${(drones && JSON.parse(drones).map(d => d.model).join(", ")) || "N/A"}</p>
-        <hr />
-        <p><b>Portfolio Links:</b> ${(portfolioLinks && JSON.parse(portfolioLinks).join(", ")) || "N/A"}</p>
-        <p><b>Notable Clients:</b> ${(notableClients && JSON.parse(notableClients).join(", ")) || "N/A"}</p>
-        <hr />
-        <p>📸 <b>Photo:</b> ${photo}</p>
-        <p>🪪 <b>Logo:</b> ${logo || "N/A"}</p>
+      <h2>New Pilot Application Submitted</h2>
+
+      <h3>Personal Info</h3>
+      <p><b>Name:</b> ${firstName} ${lastName}</p>
+      <p><b>Email:</b> ${email}</p>
+      <p><b>Mobile:</b> ${mobile}</p>
+
+      <h3>Essentials</h3>
+      <p><b>Experience:</b> ${essentials?.experience || "N/A"}</p>
+      <p><b>Skill Level:</b> ${essentials?.skillLevel || "N/A"}</p>
+
+      <h4>Qualifications</h4>
+      <ul>
+        ${essentials?.qualifications?.map(
+        (q) => `
+            <li>
+              <b>${q.selected.join(", ")}</b>
+              <br />Expiry: ${q.expiry || "N/A"}
+              <br />Other: ${q.otherText || "N/A"}
+              <br />Document: ${q.document || "N/A"}
+            </li>
+        `
+      ).join("") || "None"
+        }
+      </ul>
+
+      <h3>Portfolio</h3>
+      <p><b>Reels:</b> ${parsedPortfolioLinks.join(", ") || "None"}</p>
+
+      <h3>Gallery Images:</h3>
+      ${galleryImages.map((g) => `<p>${g}</p>`).join("")}
       `,
     };
 
     await transporter.sendMail(mailOptions);
 
     res.status(201).json({
-      message: "Pilot form submitted successfully, and sent to admin via email!",
+      message: "Pilot form submitted successfully!",
       pilot,
     });
+
   } catch (error) {
-    console.error(error);
+    console.error("❌ ERROR IN createPilot:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 // Get all pilots
 export const getAllPilots = async (req, res) => {
