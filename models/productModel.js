@@ -76,14 +76,24 @@ const droneSchema = new mongoose.Schema({
     battery: String,
     display: String
   },
-  
-  inTheBox: [
-  {
-    name: { type: String, required: true },
-    qty: { type: Number, default: 1 },
-  },
-],
 
+  inTheBox: [
+    {
+      name: { type: String, required: true },
+      qty: { type: Number, default: 1 },
+    },
+
+  ],
+
+  reviews: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      rating: { type: Number, required: true, min: 1, max: 5 },
+      comment: { type: String, default: '' },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
+  averageRating: { type: Number, default: 0 },
 
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 
