@@ -242,3 +242,56 @@ export const getAllDrones = async (req, res) => {
 };
 
 
+export const addReview = async (req, res) => {
+  try {
+    const { droneId } = req.params;
+    const userId = req.user.id; // assuming auth middleware
+    const { rating, comment } = req.body;
+
+    if (!rating) {
+      return res.status(400).json({ message: "Rating is required" });
+    }
+
+    const drone = await Drone.findById(droneId);
+    if (!drone) {
+      return res.status(404).json({ message: "Drone not found" });
+    }
+
+    // Prevent duplicate review from same user
+    const alreadyReviewed = drone.reviews.find(
+      (rev) => rev.user.toString() === userId
+    );
+
+    if (alreadyReviewed) {
+      return res.status(400).json({ message: "You have already reviewed this product" });
+    }
+
+    // Create review
+    const newReview = {
+      user: userId,
+      rating: Number(rating),
+      comment
+    };
+
+    drone.reviews.push(newReview);
+
+    // update average rating
+    drone.averageRating =
+      drone.reviews.reduce((acc, item) => item.rating + acc, 0) /
+      drone.reviews.length;
+
+    await drone.save();
+
+    res.status(201).json({
+      message: "Review added successfully",
+      reviews: drone.reviews,
+      averageRating: drone.averageRating
+    });
+
+  } catch (error) {
+    console.error("Add Review Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
