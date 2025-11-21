@@ -30,7 +30,7 @@ export const createOrder = async (req, res) => {
       amount: amountInPaise,
       currency,
       receipt: receipt || `rcpt_${Date.now()}`,
-      payment_capture: 1, 
+      payment_capture: 1,
       notes: {
         items: JSON.stringify(items.map(i => ({ id: i.productId, qty: i.qty }))),
       },
@@ -38,15 +38,24 @@ export const createOrder = async (req, res) => {
 
     const order = await razorpay.orders.create(options);
 
-    // save order in DB with status 'created'
+    // save order in DB
     const dbOrder = new Order({
-      items,
+      user: req.user._id,
+      items: items.map(i => ({
+        productId: i.productId,
+        name: i.name,
+        price: i.price,
+        image: i.image,
+        qty: i.qty,
+      })),
       amount: amountInPaise,
       currency,
       receipt: options.receipt,
       razorpayOrderId: order.id,
       status: "created",
+      orderDate: new Date()
     });
+
     await dbOrder.save();
 
     res.status(201).json({ order, dbOrderId: dbOrder._id });
@@ -100,7 +109,7 @@ export const webhookHandler = async (req, res) => {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
     const signature = req.headers["x-razorpay-signature"];
 
-    const body = req.body; 
+    const body = req.body;
     const computedSignature = crypto
       .createHmac("sha256", webhookSecret)
       .update(body)
@@ -140,3 +149,47 @@ export const webhookHandler = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
+
+
+export const getMyOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user._id })
+      .populate({
+        path: "items.productId",
+        model: "Drone",
+        select: "name image category" 
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders,
+    });
+
+  } catch (err) {
+    console.error("getMyOrders error:", err);
+    res.status(500).json({ message: "Failed to fetch orders" });
+  }
+};
+
+
+export const getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json({ success: true, order });
+  } catch (err) {
+    console.error("getOrderById error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

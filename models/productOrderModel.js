@@ -1,19 +1,19 @@
 import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false }, // optional
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   items: [
     {
-      productId: { type: String, required: true }, // replace with ObjectId if you have Product model
+      productId: { type: String, required: true }, 
       name: String,
       price: Number,
       qty: Number,
       image: String,
     },
   ],
-  amount: { type: Number, required: true }, // in paise
+  amount: { type: Number, required: true }, 
   currency: { type: String, default: "INR" },
-  receipt: { type: String }, // optional identifier
+  receipt: { type: String }, 
   razorpayOrderId: { type: String },
   razorpayPaymentId: { type: String },
   razorpaySignature: { type: String },
