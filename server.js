@@ -23,6 +23,7 @@ import blogRoutes from './routes/blogRoutes.js';
 import contactRoutes from "./routes/contactRoutes.js";
 import repairRoutes from "./routes/repairRouts.js";
 import planRoutes from "./routes/planRoutes.js";
+import valuationRoutes from "./routes/valuationRoutes.js";
 
 dotenv.config();
 await connectDB();
@@ -70,6 +71,7 @@ app.use("/api/blogs", blogRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/repair",repairRoutes);
 app.use("/api/plans", planRoutes);
+app.use("/api/valuation", valuationRoutes);
 
 app.get("/api/get-razorpay-key", (req, res) => {
   try {
