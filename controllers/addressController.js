@@ -116,7 +116,6 @@ export const setDefaultAddress = async (req, res) => {
 
 
 // controllers/geoController.js
-// controllers/geoController.js
 export const reverseGeocode = async (req, res) => {
   try {
     const { lat, lng } = req.query;
@@ -145,7 +144,7 @@ export const reverseGeocode = async (req, res) => {
 
     res.json(mapped);
   } catch (err) {
-    console.error("Reverse geocode error:", err);
+    console.error("Reverse geocode error:", err.response?.data || err.message);
     res.status(500).json({ message: "Server Error", error: err.message });
   }
 };
