@@ -24,7 +24,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import repairRoutes from "./routes/repairRouts.js";
 import planRoutes from "./routes/planRoutes.js";
 import valuationRoutes from "./routes/valuationRoutes.js";
-
+import chatRoutes from "./routes/chatRoutes.js";
 dotenv.config();
 await connectDB();
 
@@ -56,6 +56,7 @@ app.get("/", (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/chat", chatRoutes);
 app.use("/api/rent", rentRoutes);
 app.use("/api/partners", partnerRoutes);
 app.use("/api/sell", sellRoutes);
