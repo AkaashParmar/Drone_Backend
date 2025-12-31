@@ -35,7 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use(cors({
-  origin: ["http://localhost:5173" , "https://drone-frontend-beryl.vercel.app", "https://drone-frontend-pink.vercel.app","http://20.36.136.225/Homepage"],
+  origin: ["http://localhost:5173" , "https://drone-frontend-beryl.vercel.app", "https://drone-frontend-pink.vercel.app","http://20.36.136.225"],
   credentials: true, 
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
